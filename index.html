@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>青春適性診断</title>
+
+<style>
+body{
+    font-family:"Yu Gothic",sans-serif;
+    background:#eef6ff;
+    padding:40px;
+    max-width:900px;
+    margin:auto;
+}
+
+h1{
+    text-align:center;
+}
+
+.question{
+    background:white;
+    padding:20px;
+    margin:20px 0;
+    border-radius:10px;
+    box-shadow:0 0 8px rgba(0,0,0,.1);
+}
+
+button{
+    width:100%;
+    padding:15px;
+    font-size:18px;
+    margin-top:20px;
+}
+
+#result{
+    margin-top:40px;
+    background:#fff;
+    padding:30px;
+    border-radius:10px;
+    display:none;
+}
+</style>
+</head>
+
+<body>
+
+<h1>青春適性診断</h1>
+
+<p>
+深く考えず、「なんとなく好き」と思うものを選んでください。
+</p>
+
+<div id="questions"></div>
+
+<button onclick="judge()">診断する</button>
+
+<div id="result"></div>
+
+<script>
+
+const questions=[
+
+{
+q:"放課後、予定が空いてしまいました。",
+c:[
+["誰かを誘って遊ぶ","A"],
+["気になる人がいないか探す","B"],
+["一人で知らない場所へ歩いてみる","C"],
+["やるべきことを進める","D"]
+]
+},
+
+{
+q:"一つだけ守れるなら？",
+c:[
+["思い出","A"],
+["約束","B"],
+["自分らしさ","C"],
+["可能性","D"]
+]
+},
+
+{
+q:"翼があったら最初に何をしますか？",
+c:[
+["みんなを乗せて飛ぶ","A"],
+["会いたい人に会いに行く","B"],
+["世界中を旅する","C"],
+["誰も知らない場所を探す","D"]
+]
+},
+
+{
+q:"落とし物を見つけました。",
+c:[
+["持ち主を探す","A"],
+["大切そうなら急いで届ける","B"],
+["少し様子を見る","C"],
+["中身が気になる","D"]
+]
+},
+
+{
+q:"あなたが惹かれるものは？",
+c:[
+["アルバム","A"],
+["手紙","B"],
+["地図","C"],
+["設計図","D"]
+]
+},
+
+{
+q:"あなたにとって『前へ進む』とは？",
+c:[
+["誰かと歩くこと","A"],
+["大切な人を想うこと","B"],
+["自分で決めること","C"],
+["夢へ近づくこと","D"]
+]
+}
+
+];
+
+const div=document.getElementById("questions");
+
+questions.forEach((q,i)=>{
+
+let html=`<div class="question">
+<h3>Q${i+1}. ${q.q}</h3>`;
+
+q.c.forEach((c,j)=>{
+
+html+=`
+<label>
+<input type="radio" name="q${i}" value="${c[1]}">
+${c[0]}
+</label><br><br>
+`;
+
+});
+
+html+="</div>";
+
+div.innerHTML+=html;
+
+});
+
+function judge(){
+
+let score={
+A:0,
+B:0,
+C:0,
+D:0
+};
+
+for(let i=0;i<questions.length;i++){
+
+let ans=document.querySelector(`input[name=q${i}]:checked`);
+
+if(!ans){
+alert("すべて回答してください。");
+return;
+}
+
+score[ans.value]++;
+
+}
+
+let max=Math.max(score.A,score.B,score.C,score.D);
+
+let result="";
+
+if(score.A===max){
+
+result=`
+<h2>タイプ：絆を大切にする人</h2>
+
+<p>
+あなたは、人とのつながりの中で力を発揮するタイプです。
+誰かと過ごした時間や信頼を大切にし、
+仲間のためなら困難にも立ち向かえるでしょう。
+</p>
+
+<p><b>あなたに最も適したHOは「HO1」です。</b></p>
+`;
+
+}
+
+else if(score.B===max){
+
+result=`
+<h2>タイプ：心を貫く人</h2>
+
+<p>
+あなたは、一人の大切な存在を原動力にするタイプです。
+感情を大切にし、その想いがあなたを強くします。
+</p>
+
+<p><b>あなたに最も適したHOは「HO2」です。</b></p>
+`;
+
+}
+
+else if(score.C===max){
+
+result=`
+<h2>タイプ：自由を求める人</h2>
+
+<p>
+あなたは、常識に縛られず、
+自分自身で道を選びたいと思う人です。
+未知への好奇心が強いでしょう。
+</p>
+
+<p><b>あなたに最も適したHOは「HO3」です。</b></p>
+`;
+
+}
+
+else{
+
+result=`
+<h2>タイプ：未来を切り拓く人</h2>
+
+<p>
+あなたは理想や可能性を信じ、
+困難な状況でも前へ進もうとするタイプです。
+未来を変える力を持っています。
+</p>
+
+<p><b>あなたに最も適したHOは「HO4」です。</b></p>
+`;
+
+}
+
+const r=document.getElementById("result");
+
+r.style.display="block";
+r.innerHTML=result;
+
+window.scrollTo({
+top:document.body.scrollHeight,
+behavior:"smooth"
+});
+
+}
+
+</script>
+
+</body>
+</html>
