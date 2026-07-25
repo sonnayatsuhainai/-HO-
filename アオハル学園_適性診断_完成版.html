@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>私立アオハル学園｜青守会 適性診断試験</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:"Yu Gothic",sans-serif;background:linear-gradient(180deg,#0b2345,#184d8b 260px,#eef4fb 260px);color:#223}
+header{padding:40px 20px;text-align:center;color:#fff;position:relative;overflow:hidden}
+header:before{content:"";position:absolute;inset:0;background:
+radial-gradient(circle at 20% 30%,rgba(255,255,255,.18),transparent 30%),
+radial-gradient(circle at 80% 20%,rgba(255,255,255,.12),transparent 25%);
+}
+header>*{position:relative}
+header h1{margin:0;font-size:42px;letter-spacing:4px}
+header p{margin:6px 0}
+main{max-width:900px;margin:-30px auto 40px;padding:0 18px}
+.card{background:rgba(255,255,255,.88);backdrop-filter:blur(10px);border-radius:16px;padding:24px;margin:18px 0;box-shadow:0 10px 25px rgba(0,0,0,.15)}
+.notice{border-left:6px solid #2d7fff}
+.q{display:none}
+.q.active{display:block}
+label{display:block;margin:10px 0;padding:10px;border-radius:8px;background:#f5f8fd;cursor:pointer}
+button{background:#1f65d6;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:16px;cursor:pointer}
+.progress{height:8px;background:#d7e3f5;border-radius:99px;margin:12px 0}
+.bar{height:100%;background:#2d7fff;width:0;border-radius:99px;transition:.3s}
+#result,#tie{display:none}
+.smalllog{font-family:monospace;color:#007b55;margin-top:20px;white-space:pre-line}
+</style>
+</head>
+<body>
+<header>
+<div>PRIVATE AOHARU ACADEMY</div>
+<h1>私立アオハル学園</h1>
+<p>Aptitude Examination System</p>
+</header>
+<main>
+<div class="card notice">
+<h2>青守会 適性診断試験</h2>
+<p>青守会では、ドームの未来を支える生徒の適性を確認するため、価値観や行動傾向を分析する適性診断を実施しています。</p>
+<p>正解・不正解はありません。深く考えず、最初に思い浮かんだ選択肢を選択してください。</p>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<div id="count">1 / 10</div>
+</div>
+<div id="quiz"></div>
+<div id="tie" class="card"></div>
+<div id="result" class="card"></div>
+</main>
+<script>
+const desc={
+A:{n:"HO1『友情』",t:"仲間を信じる者",d:"あなたは、人との絆によって最も力を発揮する人物です。<br><br>困難な状況でも一人で抱え込まず、互いに支え合いながら前へ進むことを選びます。<br><br>誰かのために行動する優しさと信頼は、多くの人を勇気づける力となるでしょう。<br><br><b>あなたには、人々を繋ぐ資質があります。</b>"},
+B:{n:"HO2『恋愛』",t:"心を貫く者",d:"あなたは、一人の存在を大切に想う力を持っています。<br><br>その想いは迷いや不安を乗り越え、あなたを前へ進ませる原動力となります。<br><br>誰かを大切に想う心は、決して弱さではありません。<br><br><b>あなたには、人の心を動かす資質があります。</b>"},
+C:{n:"HO3『自由』",t:"鳥籠を越える者",d:"あなたは、常識や固定観念に縛られません。<br><br>自分で考え、自分で選び、自分だけの答えを見つけることを望みます。<br><br>未知への好奇心と挑戦する勇気は、新たな可能性を切り開く力となるでしょう。<br><br><b>あなたには、自ら道を切り拓く資質があります。</b>"},
+D:{n:"HO4『未来』",t:"希望を灯す者",d:"あなたは、理想を諦めません。<br><br>目の前の困難に立ち止まることなく、その先にある目標へ向かって歩み続けます。<br><br>努力を積み重ねる強い意志は、周囲にも希望を与えるでしょう。<br><br><b>あなたには、人々を導く資質があります。</b>"}};
+const finalText={A:"かけがえのない仲間との絆",B:"たった一人への想い",C:"誰にも縛られない自分の意思",D:"まだ見ぬ未来への希望"};
+const qs=[
+["休日に予定が空いたら？",["友人を誘う","気になる人","一人旅","勉強"]],
+["一つだけ持ち出すなら？",["写真","手紙","地図","設計図"]],
+["初めての街では？",["広場","カフェ","裏路地","資料館"]],
+["対立したら？",["話し合う","相手を優先","貫く","最善策"]],
+["翼があれば？",["誰かを乗せる","会いに行く","旅","未知へ"]],
+["惹かれる言葉",["ありがとう","待ってる","自由","希望"]],
+["朝最初に見るもの",["知人","通知","空","予定"]],
+["好きな場所",["広場","ベンチ","展望台","図書館"]],
+["文化祭",["みんな","好きな人","自由","企画"]],
+["人生で大切",["信頼","想い","意思","夢"]]
+];
+let scores={A:0,B:0,C:0,D:0},idx=0;
+const quiz=document.getElementById("quiz");
+qs.forEach((q,i)=>{
+ let h=`<div class="card q ${i==0?"active":""}" id=q${i}><h3>Q${i+1}. ${q[0]}</h3>`;
+ ["A","B","C","D"].forEach((k,j)=>h+=`<label><input type=radio name=q${i} value=${k}> ${q[1][j]}</label>`);
+ h+=`<button onclick="nextQ(${i})">${i==9?"診断":"次へ"}</button></div>`;
+ quiz.innerHTML+=h;
+});
+function nextQ(i){
+ let c=document.querySelector(`input[name=q${i}]:checked`);
+ if(!c){alert("選択してください");return;}
+ scores[c.value]++; document.getElementById("q"+i).classList.remove("active");
+ if(i<9){document.getElementById("q"+(i+1)).classList.add("active");document.getElementById("bar").style.width=((i+2)*10)+"%";document.getElementById("count").textContent=(i+2)+" / 10";}
+ else finish();
+}
+function finish(){
+ let arr=Object.entries(scores).sort((a,b)=>b[1]-a[1]);let top=arr[0][1];let tie=arr.filter(x=>x[1]==top).map(x=>x[0]);
+ if(tie.length>1){let h="<h2>最終適性判定</h2>";tie.forEach(k=>h+=`<label><input type=radio name=f value=${k}> ${finalText[k]}</label>`);h+=`<button onclick="finalize('${tie.join("")}')">決定</button>`;tieDiv.innerHTML=h;tieDiv.style.display="block";}
+ else render(arr,arr[0][0]);
+ window._arr=arr;
+}
+const tieDiv=document.getElementById("tie");
+function finalize(){let c=document.querySelector("input[name=f]:checked");if(!c){alert("選択してください");return;}tieDiv.style.display="none";render(window._arr,c.value);}
+function render(arr,best){
+ let ranks=arr.map((x,i)=>`${i+1}位　${desc[x[0]].n}　${x[1]}pt`).join("<br>");
+ result.innerHTML=`<h2>診断結果</h2>${ranks}<hr><h2>${desc[best].n}</h2><h3>${desc[best].t}</h3><p>${desc[best].d}</p><hr><div style="text-align:center"><h3>適性診断　完了</h3><p>診断データは正常に登録されました。<br>青守会候補生としての適性が確認されました。<br><br>詳細な配属については、入学後に通知されます。<br><br>ご協力ありがとうございました。<br><br>私立アオハル学園<br>学園統制室</p><div class="smalllog">SYSTEM LOG\n\n> 当該生徒：解析完了\n> Candidate Status : Registered</div></div>`;
+ result.style.display="block";result.scrollIntoView({behavior:"smooth"});
+}
+</script>
+</body></html>
